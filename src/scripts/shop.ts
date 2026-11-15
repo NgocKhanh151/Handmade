@@ -201,8 +201,14 @@ function renderProducts(): void {
   }
 }
 
-function ensureTurnstileRendered(): void {
-  if (!siteConfig.turnstileSiteKey || !window.turnstile) return;
+function ensureTurnstileRendered(retries = 0): void {
+  if (!siteConfig.turnstileSiteKey) return;
+  if (!window.turnstile) {
+    if (retries < 10) {
+      setTimeout(() => ensureTurnstileRendered(retries + 1), 300);
+    }
+    return;
+  }
   if (turnstileWidgetId !== undefined) {
     window.turnstile.reset(turnstileWidgetId);
     turnstileToken = '';
@@ -278,6 +284,14 @@ searchInput.addEventListener('input', () => {
 inquiryForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   formError.classList.add('hidden');
+
+  if (siteConfig.turnstileSiteKey && !turnstileToken) {
+    formError.textContent =
+      'Vui lòng đợi ô xác thực chống spam tải xong (hoặc tắt trình chặn quảng cáo) trước khi gửi.';
+    formError.classList.remove('hidden');
+    return;
+  }
+
   formSubmitBtn.disabled = true;
   formSubmitBtn.textContent = 'Đang gửi yêu cầu...';
 
