@@ -4,7 +4,7 @@ pages_build_output_dir = "./dist"
 
 [vars]
 SHOP_NAME = "Xưởng Thủ Công"
-ZALO_PHONE = "0900000000"
+ZALO_PHONE = "0373103056"
 MESSENGER_PAGE_ID = "your-facebook-page-id"
 ALLOWED_IMAGE_HOSTS = ""
-TURNSTILE_SITE_KEY = "1x00000000000000000000AA"
+TURNSTILE_SITE_KEY = "site key: 0x4AAAAAAGB5v9NeQXxoPRlL"
