@@ -1,0 +1,244 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout>
+  <header class="border-b border-stone-200 bg-white/80 backdrop-blur sticky top-0 z-30">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
+      <div>
+        <h1 id="shop-name" class="text-xl font-bold tracking-tight text-ink">Xưởng Thủ Công</h1>
+        <p class="text-xs text-stone-500">Chế tác thủ công &amp; nhận làm theo yêu cầu riêng</p>
+      </div>
+      <div class="w-full max-w-xs">
+        <input
+          id="search-input"
+          type="search"
+          placeholder="Tìm sản phẩm, chất liệu..."
+          class="w-full px-3.5 py-2 rounded-xl border border-stone-200 bg-cream/60 text-sm focus:outline-none focus:border-clay-600"
+        />
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-8 flex-1 w-full">
+    <div
+      id="demo-banner"
+      class="hidden mb-6 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-sm"
+    >
+      Đang hiển thị <strong>dữ liệu mẫu</strong>. Hãy cấu hình biến môi trường Google Sheets trong
+      Cloudflare Pages để đồng bộ sản phẩm thật của bạn.
+    </div>
+
+    <section class="mb-8">
+      <div class="bg-white rounded-3xl border border-stone-200/80 p-6 md:p-8 shadow-sm">
+        <h2 class="text-2xl md:text-3xl font-bold text-ink mb-2">
+          Sản phẩm thủ công độc bản theo ý bạn
+        </h2>
+        <p class="text-stone-600 max-w-2xl text-sm md:text-base">
+          Chọn mẫu bạn yêu thích, điền kích thước, màu sắc hoặc ý tưởng riêng. Xưởng sẽ tiếp nhận
+          thông tin trước khi trao đổi trực tiếp qua Zalo hoặc Messenger.
+        </p>
+      </div>
+    </section>
+
+    <section aria-label="Bộ lọc danh mục" class="mb-6">
+      <div id="category-filters" class="flex flex-wrap gap-2"></div>
+    </section>
+
+    <section aria-label="Danh sách sản phẩm">
+      <div
+        id="product-grid"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+      >
+        <p class="text-stone-500 text-sm">Đang tải sản phẩm...</p>
+      </div>
+      <p id="empty-state" class="hidden text-center text-stone-500 py-12">
+        Không tìm thấy sản phẩm phù hợp.
+      </p>
+    </section>
+  </main>
+
+  <footer class="border-t border-stone-200 bg-white py-6 text-center text-xs text-stone-500">
+    <p>Dữ liệu đồng bộ an toàn qua Cloudflare Workers &amp; Google Sheets</p>
+  </footer>
+
+  <div
+    id="product-modal"
+    class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modal-title"
+  >
+    <div class="bg-white rounded-3xl max-w-4xl w-full overflow-hidden shadow-xl my-auto max-h-[92vh] flex flex-col">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-stone-100">
+        <span id="modal-category" class="text-xs uppercase tracking-wider text-stone-500 font-medium"></span>
+        <button
+          id="close-modal"
+          type="button"
+          class="w-8 h-8 rounded-full hover:bg-stone-100 flex items-center justify-center text-stone-600"
+          aria-label="Đóng"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div class="p-6 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <div class="aspect-[4/3] rounded-2xl overflow-hidden bg-stone-100 mb-3">
+            <img id="modal-main-img" src="" alt="" class="w-full h-full object-cover" />
+          </div>
+          <div id="modal-thumbs" class="flex flex-wrap gap-2 mb-4"></div>
+          <h3 id="modal-title" class="text-xl font-bold text-ink mb-1"></h3>
+          <p id="modal-price" class="text-lg font-bold text-clay-700 mb-3"></p>
+          <p id="modal-desc" class="text-sm text-stone-600 whitespace-pre-line leading-relaxed"></p>
+        </div>
+
+        <div class="bg-cream/60 rounded-2xl p-5 border border-stone-200/70">
+          <h4 class="font-semibold text-ink mb-1">Gửi yêu cầu chi tiết</h4>
+          <p class="text-xs text-stone-500 mb-4">
+            Điền thông tin để xưởng chuẩn bị tư vấn trước khi bạn nhắn Zalo / Messenger.
+          </p>
+
+          <form id="inquiry-form" class="space-y-3">
+            <input id="form-product-id" name="productId" type="hidden" />
+            <input id="form-product-name" name="productName" type="hidden" />
+
+            <div>
+              <label class="block text-xs font-medium text-stone-700 mb-1">Họ và tên *</label>
+              <input
+                name="customerName"
+                type="text"
+                required
+                minlength="2"
+                maxlength="80"
+                placeholder="Ví dụ: Nguyễn Minh Anh"
+                class="w-full px-3 py-2 rounded-xl border border-stone-200 bg-white text-sm"
+              />
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-stone-700 mb-1">Số điện thoại / Zalo *</label>
+              <input
+                name="phoneOrZalo"
+                type="tel"
+                required
+                minlength="8"
+                maxlength="25"
+                placeholder="09xx xxx xxx"
+                class="w-full px-3 py-2 rounded-xl border border-stone-200 bg-white text-sm"
+              />
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-medium text-stone-700 mb-1">Kích thước mong muốn</label>
+                <input
+                  name="dimensions"
+                  type="text"
+                  maxlength="120"
+                  placeholder="VD: 20x30 cm"
+                  class="w-full px-3 py-2 rounded-xl border border-stone-200 bg-white text-sm"
+                />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-stone-700 mb-1">Số lượng</label>
+                <input
+                  name="quantity"
+                  type="number"
+                  min="1"
+                  max="999"
+                  value="1"
+                  class="w-full px-3 py-2 rounded-xl border border-stone-200 bg-white text-sm"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-stone-700 mb-1">Màu sắc / Chất liệu</label>
+              <input
+                name="colorOrMaterial"
+                type="text"
+                maxlength="120"
+                placeholder="VD: Nâu bò, khắc tên..."
+                class="w-full px-3 py-2 rounded-xl border border-stone-200 bg-white text-sm"
+              />
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-stone-700 mb-1">Ghi chú thêm</label>
+              <textarea
+                name="notes"
+                rows="3"
+                maxlength="1000"
+                placeholder="Thời gian cần nhận hàng, yêu cầu đóng gói quà..."
+                class="w-full px-3 py-2 rounded-xl border border-stone-200 bg-white text-sm"
+              ></textarea>
+            </div>
+
+            <div id="turnstile-container" class="pt-1"></div>
+
+            <p id="form-error" class="hidden text-xs text-red-600 font-medium"></p>
+
+            <button
+              id="form-submit"
+              type="submit"
+              class="w-full py-2.5 px-4 rounded-xl bg-clay-700 hover:bg-clay-600 text-white text-sm font-semibold transition disabled:opacity-60"
+            >
+              Gửi yêu cầu &amp; Mở chat Zalo / Messenger
+            </button>
+          </form>
+
+          <div id="inquiry-success" class="hidden space-y-4">
+            <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-medium">
+              Đã ghi nhận yêu cầu của bạn! Hãy chọn kênh chat bên dưới để trao đổi trực tiếp:
+            </div>
+
+            <pre
+              id="inquiry-summary"
+              class="p-3 rounded-xl bg-white border border-stone-200 text-xs text-stone-700 whitespace-pre-wrap font-sans"
+            ></pre>
+
+            <button
+              id="copy-summary-btn"
+              type="button"
+              class="w-full py-2 px-3 rounded-xl border border-stone-300 bg-white hover:bg-stone-50 text-xs font-medium text-stone-700"
+            >
+              Copy nội dung yêu cầu
+            </button>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <a
+                id="zalo-link"
+                href="#"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold text-center"
+              >
+                Chat qua Zalo
+              </a>
+              <a
+                id="messenger-link"
+                href="#"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold text-center"
+              >
+                Chat Messenger
+              </a>
+            </div>
+
+            <button
+              id="reset-form-btn"
+              type="button"
+              class="w-full text-xs text-stone-500 hover:underline pt-1"
+            >
+              Gửi thêm một yêu cầu khác
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../scripts/shop.ts"></script>
+</BaseLayout>

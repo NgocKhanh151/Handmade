@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.astro/
+.env
+.dev.vars
+.wrangler/
+.DS_Store
+
+# Google Sheets & Service Account secrets
+keysheet
+keysheet.txt
+Google_Sheet_ServicesKey.json
+*-ServicesKey.json
