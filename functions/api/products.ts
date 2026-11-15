@@ -71,6 +71,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       products = DEMO_PRODUCTS;
       isDemo = true;
     } else {
+      console.error('Products API error:', message);
       return jsonResponse({ error: 'Không thể tải danh sách sản phẩm lúc này.' }, 502);
     }
   }

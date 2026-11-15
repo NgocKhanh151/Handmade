@@ -14,7 +14,7 @@ function base64UrlEncode(input: Uint8Array | string): string {
 }
 
 function pemToArrayBuffer(pem: string): ArrayBuffer {
-  const normalized = pem.replace(/\\n/g, '\n');
+  const normalized = pem.trim().replace(/^["']|["']$/g, '').replace(/\\n/g, '\n');
   const base64 = normalized
     .replace(/-----BEGIN PRIVATE KEY-----/g, '')
     .replace(/-----END PRIVATE KEY-----/g, '')
@@ -66,7 +66,8 @@ async function getGoogleAccessToken(email: string, privateKeyPem: string): Promi
   });
 
   if (!tokenRes.ok) {
-    throw new Error(`Google OAuth failed (${tokenRes.status})`);
+    const errBody = await tokenRes.text();
+    throw new Error(`Google OAuth failed (${tokenRes.status}): ${errBody}`);
   }
 
   const tokenData = (await tokenRes.json()) as { access_token?: string };
@@ -89,13 +90,14 @@ export async function fetchProductsFromSheet(env: Env): Promise<PublicProduct[]>
   }
 
   const accessToken = await getGoogleAccessToken(
-    env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+    env.GOOGLE_SERVICE_ACCOUNT_EMAIL.trim(),
     env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY
   );
 
+  const sheetId = env.GOOGLE_SHEETS_ID.trim();
   const range = encodeURIComponent('Products!A2:I');
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(
-    env.GOOGLE_SHEETS_ID
+    sheetId
   )}/values/${range}`;
 
   const res = await fetch(url, {
@@ -103,7 +105,8 @@ export async function fetchProductsFromSheet(env: Env): Promise<PublicProduct[]>
   });
 
   if (!res.ok) {
-    throw new Error(`Google Sheets API error (${res.status})`);
+    const errBody = await res.text();
+    throw new Error(`Google Sheets API error (${res.status}): ${errBody}`);
   }
 
   const payload = (await res.json()) as { values?: string[][] };
