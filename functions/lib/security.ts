@@ -71,15 +71,24 @@ export function formatInquirySummary(inquiry: InquiryInput, shopName: string): s
 export async function sendTelegramNotification(env: Env, text: string): Promise<void> {
   if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) return;
 
-  const url = `https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`;
-  await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      chat_id: env.TELEGRAM_CHAT_ID,
-      text,
-    }),
-  });
+  const chatIds = env.TELEGRAM_CHAT_ID.split(',')
+    .map((id) => id.trim())
+    .filter(Boolean);
+  if (chatIds.length === 0) return;
+
+  const url = `https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN.trim()}/sendMessage`;
+  await Promise.allSettled(
+    chatIds.map((chatId) =>
+      fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text,
+        }),
+      })
+    )
+  );
 }
 
 export function jsonResponse(data: unknown, status = 200, extraHeaders?: HeadersInit): Response {
